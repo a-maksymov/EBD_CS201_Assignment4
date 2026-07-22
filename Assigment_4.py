@@ -1,5 +1,7 @@
 import json
 import csv
+import pandas as pd
+import matplotlib.pyplot as plt
 #зчитуємо json
 with open('regional_tariffs.json', 'r') as file:
     tariffs = json.load(file)
@@ -38,6 +40,7 @@ with open('cleaned_sales_updated.csv', 'w', newline='', encoding='utf-8') as fil
     writer = csv.DictWriter(file, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(dict_of_sales)
+print("Оновлений ЦеВеликіЯйця.файл успішно збережений до файлу - 'cleaned_sales_updated.csv'")
 
 #сортуємо чистий прибуток по категоріям
 
@@ -53,8 +56,8 @@ for row in dict_of_sales:
     else:
         profit_in_category[category] = profit
 
-print("Сумарний прибуток за категоріями:")
-print(profit_in_category)
+# print("Сумарний прибуток за категоріями:")
+# print(profit_in_category)
 
 #рахуємо середнє по категоріям
 average_profit = sum(profit_in_category.values()) / len(profit_in_category)
@@ -75,11 +78,50 @@ for znachennya in profit_list:
     category = znachennya[1]
     sorted_top_categories[category] = profit
 
-print(sorted_top_categories)
+# print(sorted_top_categories)
 
 
 #пишемо це у новий JEsusCrist file
 with open('top_categories.json', 'w', encoding='utf-8') as file:
     json.dump(sorted_top_categories, file, indent=4)
 
-print("Топ категорії успішно збережено у 'top_categories.json'")
+print("Топ категорії успішно збережено у 'top_categories.json' (JEsusCrist) ")
+
+
+#Visualisation!!!!
+# перетворюю наш відсортований словник на список пар,
+# а потім передаємо у датафраме.
+# вказую назви колонок
+df = pd.DataFrame(list(sorted_top_categories.items()), columns=['Product Category', 'Net Profit'])
+# збільшуємо всі індекси на 1
+df.index += 1
+# виводимо красиву таблицю на екран
+print("\nТаблиця топ категорій:")
+print(df)
+
+categories = list(sorted_top_categories.keys())
+profits = list(sorted_top_categories.values())
+
+# cтворюю чистий листок з конкретними розмірами
+fig, aboba = plt.subplots(figsize=(10, 10))
+
+# малюємо стовпчики
+aboba.bar(categories, profits, color="green", edgecolor="black", zorder=8)
+
+# додаю заголовки та підписи через set_
+aboba.set_title("Чистий прибуток за топ-категоріями", fontsize=20, fontweight="bold")
+aboba.set_xlabel("Категорія товарів", fontsize=15)
+aboba.set_ylabel("Прибуток", fontsize=15)
+
+# сітка
+aboba.grid(axis='y', linestyle=':', alpha=1, zorder=3)
+
+# нахиляю підписи категорій
+aboba.tick_params(axis='x', rotation=44)
+
+# автоматичне вирівнювання відступів
+fig.tight_layout()
+
+# у мене не вийшло через plt.show, тому довелось виводити окремим файлом картинку з графіком, можливо це через лінукс, я не зміг розібратися
+plt.savefig('chart_top_categories.png', dpi=200)
+print("Графік успішно збережено у файл 'chart_top_categories.png'")
